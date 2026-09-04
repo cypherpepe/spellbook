@@ -2,6 +2,7 @@ version: 2
 
 models: 
   - name: aerodrome_trades
+  - name: agra_trades
   - name: airswap_trades
   - name: apeswap_trades
   - name: arbswap_trades
@@ -34,7 +35,6 @@ models:
   - name: mummy_finance_trades
   - name: nomiswap_trades
   - name: onepunchswap_trades
-  - name: openocean_trades
   - name: openxswap_trades
   - name: opx_finance_trades
   - name: pancakeswap_trades

@@ -1,7 +1,8 @@
 {{ config(
     schema = 'uniswap_v4_zora'
     , alias = 'sqrtpricex96'
-    , materialized = 'incremental'
+    , materialized = 'table'
+    , tags = ['static']
     , file_format = 'delta'
     , incremental_strategy = 'merge'
     , unique_key = ['id', 'blockchain', 'block_index_sum']
@@ -16,5 +17,7 @@
         , version = '4'
         , PoolManager_evt_Initialize = source('uniswap_v4_zora', 'PoolManager_evt_Initialize')
         , PoolManager_evt_Swap = source('uniswap_v4_zora', 'PoolManager_evt_Swap') 
+        , transactions = source('zora', 'transactions')
+        , monthly_relation = ref('uniswap_v4_zora_sqrtpricex96_monthly')
     )
 }}

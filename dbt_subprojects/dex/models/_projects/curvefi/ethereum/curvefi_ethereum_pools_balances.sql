@@ -6,7 +6,8 @@
     file_format = 'delta',
     incremental_strategy = 'merge',
     unique_key = ['address', 'token_address', 'day'],
-    incremental_predicates = [incremental_predicate('DBT_INTERNAL_DEST.day')]
+    incremental_predicates = [incremental_predicate('DBT_INTERNAL_DEST.day')],
+    tags = ['prod_exclude']
   )
 }}
 
@@ -16,5 +17,6 @@
         , start_date = '2022-06-01'
         , pools_table = ref('curve_ethereum_view_pools')
         , pools_column = 'pool_address'
+        , self_seed_relation = this
     )
 }}

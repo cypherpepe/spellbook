@@ -1,7 +1,8 @@
 {{ config(
     schema = 'uniswap_v4_zora'
     , alias = 'base_liquidity_events'
-    , materialized = 'incremental'
+    , materialized = 'table'
+    , tags = ['static']
     , file_format = 'delta'
     , incremental_strategy = 'merge'
     , unique_key = ['tx_hash', 'evt_index', 'event_type']
@@ -19,5 +20,6 @@
         , liquidity_pools = ref('uniswap_v4_zora_pools')
         , liquidity_sqrtpricex96 = ref('uniswap_v4_zora_sqrtpricex96')
         , PoolManager_call_ModifyLiquidity = source ('uniswap_v4_zora', 'PoolManager_call_ModifyLiquidity')
+        , transactions = source('zora', 'transactions')
     )
 }}

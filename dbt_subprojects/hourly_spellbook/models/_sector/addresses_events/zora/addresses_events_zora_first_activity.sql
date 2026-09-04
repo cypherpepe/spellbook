@@ -1,7 +1,8 @@
 {{ config(
     schema = 'addresses_events_zora'
     , alias = 'first_activity'
-    , materialized = 'incremental'
+    , materialized = 'table'
+    , tags = ['static']
     , file_format = 'delta'
     , incremental_strategy = 'append'
     , unique_key = ['address']
@@ -31,7 +32,7 @@ LEFT JOIN (
 {% if is_incremental() %}
 LEFT JOIN {{this}} ffb ON et."from" = ffb.address
 WHERE ffb.address IS NULL
-AND et.block_time >= date_trunc('day', now() - interval '7' day)
+AND {{ incremental_predicate('et.block_time') }}
 {% endif %}
 
 GROUP BY et."from"

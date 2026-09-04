@@ -27,11 +27,17 @@ models:
       tags: ['solana','epoch']
     description: >
         epochs by block slot (432000 slots per epoch)
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - block_slot
     columns:
       - name: block_time
       - name: block_slot
         data_tests:
           - unique
+          - not_null
       - name: epoch
       - name: first_block_epoch
       - name: epoch_progress
@@ -78,22 +84,6 @@ models:
       - *token_mint_address
       - *token_balance_owner
       - *updated_at
-
-  - name: solana_utils_total_rewards
-    meta:
-      blockchain: solana
-      contributors: [ilemi]
-    config:
-      tags: ['solana','rewards']
-    description: >
-        get the total rewards paid out to each address
-    columns:
-      - &recipient 
-        name: recipient
-      - &reward_type 
-        name: reward_type
-      - &rewards
-        name: rewards
 
   - name: solana_utils_sns_domains
     meta:

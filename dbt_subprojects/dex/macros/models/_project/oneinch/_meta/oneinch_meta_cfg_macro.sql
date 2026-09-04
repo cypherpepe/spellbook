@@ -18,6 +18,26 @@
     ]) }}
 {% endmacro %}
 
+-- ERC20True placeholder used as the counter-leg of Fusion+ cross-chain orders: https://github.com/1inch/cross-chain-swap/blob/master/contracts/mocks/ERC20True.sol
+{% macro oneinch_cross_chain_placeholder_tokens_cfg_macro() %}
+    {{ return([
+        '0xda0000d4000015a526378bb6fafc650cea5966f8',
+        '0xd66097c27eb8dee404bac235737932260edc6f3b',
+    ]) }}
+{% endmacro %}
+
+-- v4-style flash-accounting singletons (vaults / pool managers) that hold the funds of all their pools,
+-- so they are the venue-side counterparties of executor transfer legs instead of the individual pools:
+-- bnb: pancakeswap infinity vault (0x238a...), uniswap v4 pool manager (0x28e2...)
+{% macro oneinch_ar_settlement_vaults_cfg_macro() %}
+    {{ return({
+        "bnb": [
+            '0x238a358808379702088667322f80ac48bad5e6c4',
+            '0x28e2ea090877bf75740558f6bfb36a5ffee9e9df',
+        ],
+    }) }}
+{% endmacro %}
+
 -- SUBSTREAMS CONFIGURATIONS --
 {% macro oneinch_ar_raw_calls_cfg_macro()   %} {{ return(dict(oneinch_ar_cfg_macro(), start="2019-06-01")) }} {% endmacro %}
 {% macro oneinch_ar_transfers_cfg_macro()   %} {{ return(dict(oneinch_ar_cfg_macro(), start="2019-06-01")) }} {% endmacro %}
@@ -275,6 +295,23 @@
     }) }}
 {% endmacro %}
 
+{% macro oneinch_robinhood_cfg_macro() %}
+    {# transfers_from_traces = false: robinhood tokens uses the newer base_transfers schema, no transfers_from_traces table #}
+    {{ return({
+        "name"                          : "robinhood",
+        "start"                         : "2026-06-01",
+        "chain_id"                      : "4663",
+        "native_token_symbol"           : "'ETH'",
+        "wrapped_native_token_address"  : "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+        "explorer_link"                 : "'https://robinhoodchain.blockscout.com'",
+        "fusion_settlement_addresses"   : ['0x2ad5004c60e16e54d5007c80ce329adde5b51ef5', '0xabd4e5fb590aa132749bbf2a04ea57efbaac399e'],
+        "escrow_factory_addresses"      : ['0xa02b9cc95094bb27d1d041b9fbf09f65a366f7b3'],
+        "atokens"                       : false,
+        "transfers_from_traces"         : false,
+        "creations_parent_code_offset"  : 21,
+    }) }}
+{% endmacro %}
+
 {% macro oneinch_solana_cfg_macro() %}
     {{ return({
         "name"                          : "solana",
@@ -312,6 +349,7 @@
         dict(oneinch_linea_cfg_macro()      , evm=true  , fusionV1=false, exposed=["ar", "lo", "cc"], contracts=oneinch_meta_contracts_cfg_macro()),
         dict(oneinch_sonic_cfg_macro()      , evm=true  , fusionV1=false, exposed=["ar", "lo", "cc"], contracts=oneinch_meta_contracts_cfg_macro()),
         dict(oneinch_unichain_cfg_macro()   , evm=true  , fusionV1=false, exposed=["ar", "lo", "cc"], contracts=oneinch_meta_contracts_cfg_macro()),
+        dict(oneinch_robinhood_cfg_macro()  , evm=true  , fusionV1=false, exposed=["ar", "lo", "cc"], contracts=oneinch_meta_contracts_cfg_macro()),
         dict(oneinch_aurora_cfg_macro()     , evm=true  , fusionV1=false),
         dict(oneinch_klaytn_cfg_macro()     , evm=true  , fusionV1=false),
         dict(oneinch_solana_cfg_macro()     , evm=false , fusionV1=false),

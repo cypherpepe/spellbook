@@ -1,4 +1,4 @@
-name: dbt CI
+name: dbt CI from fork
 
 # Second half of the fork-safe CI pipeline. This workflow has access to secrets.
 # It downloads the artefacts generated in "Receive dbt PR", and runs dbt CI from these.
@@ -18,9 +18,12 @@ concurrency:
 
 jobs:
   plan:
+    # head_repository check: this flow is for fork PRs only; in-repo PRs are
+    # built directly by dbt_full_run.yml
     if: >
       github.event.workflow_run.event == 'pull_request' &&
-      github.event.workflow_run.conclusion == 'success'
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name != github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -31,10 +34,10 @@ jobs:
       projects: ${{ steps.validate.outputs.projects }}
     steps:
       - name: Check out repository code (main branch, trusted)
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Download PR metadata
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: pr_metadata
           path: pr_metadata

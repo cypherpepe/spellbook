@@ -1,8 +1,9 @@
 {{ config(
         alias = 'wash_trades',
         schema = 'nft',
+        filtering_columns = ['blockchain'],
         
-        post_hook='{{ expose_spells(\'["arbitrum", "avalanche_c", "bnb", "ethereum", "gnosis", "optimism", "polygon", "celo", "zksync", "base", "scroll", "zora", "blast", "fantom", "ronin", "nova", "linea", "abstract"]\',
+        post_hook='{{ expose_spells(\'["abstract", "apechain", "arbitrum", "avalanche_c", "base", "blast", "bnb", "celo", "ethereum", "fantom", "linea", "nova", "optimism", "polygon", "ronin", "scroll", "zksync", "zora"]\',
                                     "sector",
                                     "nft",
                                     \'["hildobby", "0xr3x"]\') }}')

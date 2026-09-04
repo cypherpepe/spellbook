@@ -47,6 +47,47 @@ Each model within Spellbook contains a config block with various properties. Dep
    - Only use for time-series data — do NOT use when you need to check against full history (e.g., pool creation events).
    - **Note**: This is a newer addition to Spellbook. Please add this property for new incremental spells.
 
+## Freshness Monitoring
+
+`meta.monitoring` declares when a production table should warn or page for stale data. The
+monitoring config writer reads the resolved declaration from each subproject's dbt manifest.
+
+There are no project defaults. dbt replaces the nested `monitoring` mapping rather than merging
+individual fields, so every enabled declaration must include the complete block:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `enabled` | boolean | Whether the model is monitored. |
+| `warn_after` | `{count, period}` | Staleness at which the model warns without paging. |
+| `critical_after` | `{count, period}` | Staleness at which the model is critical. Must be greater than `warn_after`. |
+| `oncall` | boolean | Whether a critical breach pages on-call. |
+
+`count` must be a positive integer. `period` must be `minute`, `hour`, or `day`.
+
+An enabled model must also set dbt's native `event_time` config to a documented event timestamp
+column. Never use a write or load timestamp: it advances during rewrites and can appear fresh while
+the source data is stale.
+
+Declare monitoring in the model's schema YAML so threshold-only changes remain config-only and do
+not rebuild the model:
+
+```yaml
+models:
+  - name: dex_trades
+    meta:
+      monitoring:
+        enabled: true
+        warn_after: {count: 4, period: hour}
+        critical_after: {count: 12, period: hour}
+        oncall: true
+    config:
+      event_time: block_time
+```
+
+No `monitoring` block means the model has not been considered. `enabled: false` records an explicit
+opt-out and requires no thresholds or `event_time`. CI validates declarations against each parsed
+manifest with `scripts/validate_monitoring.py`.
+
 ## Optional Configs for Materialized as Table / Incremental
 
 1. **partition_by**
@@ -75,3 +116,10 @@ Each model within Spellbook contains a config block with various properties. Dep
    - Overrides existing behavior for how a table is rebuilt on full refresh.
    - **Example**: `drop` to overcome dbt-trino bugs when changing a spell from view to table.
    - **Note**: This property is rare and usually applied by the Dune team.
+
+4. **filtering_columns**
+   - List of columns the Data Explorer suggests filtering on, ordered from most to least discriminating. Emitted as the `dune.data_explorer.filtering_columns` table property by the post-hook macros on prod runs.
+   - Only set columns that actually reduce the data scanned: partition columns of the underlying tables, or a column that is constant per file (such as `blockchain` in a cross-chain union).
+   - Partitioned tables do not need it — the catalog service defaults filtering columns to the partition columns when the property is absent. Set it for views and unpartitioned tables, which otherwise get no hint at all.
+   - **Example**: `filtering_columns=['block_month', 'blockchain']` on a cross-chain view whose upstream tables are partitioned by `block_month`.
+   - Set `filtering_columns=[]` to withdraw a hint that has already been published. Deleting the config line is not enough: view property updates only upsert the keys they send, so the last published value stays in place. On a table an empty list falls back to the partition-derived default.
